@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block title %}Download {{ version }} - {{ SITENAME }}{% endblock %}
+{% block metadesc %}TODO{% endblock %}
+{% block open_graph %}
+{% endblock %}
+{%block slider %}
+{%endblock %}
+
+{% block custom_header %}
+{% if CUSTOM_HEADER_PAGE %}
+{% include "includes/" + CUSTOM_HEADER_PAGE %}
+{% endif %}
+{% endblock custom_header %}
+{% block container_header %}
+{% if CUSTOM_CONTAINER_TOP_PAGE %}
+{% include "includes/" + CUSTOM_CONTAINER_TOP_PAGE %}
+{% endif %}
+{% endblock container_header %}
+{% block content_header %}
+{% include "includes/" + CUSTOM_CONTENT_TOP_PAGE|default("page_top.html") ignore missing %}
+{% endblock content_header %}
+
+{% block    content_body %}
+<div class="row">
+
+
+<div class="row">
+    <h1>NSClient++ {{version}} stable releases</h1>
+	<ul>
+		{%for release in releases  if release['prerelease'] == False %}
+			<li><a href="#{{release['name']}}">{{release['name']}}</a>
+		{% endfor %}
+	</ul>
+</div>
+<div class="row">
+    <h1>NSClient++ {{version}} nightly builds</h1>
+	<ul>
+		{%for release in releases  if release['prerelease'] == True %}
+			<li><a href="#{{release['name']}}">{{release['name']}}</a>
+		{% endfor %}
+	</ul>
+</div>
+
+
+{%for release in releases %}
+<div class="row">
+    <h2><a name="{{release['name']}}">{{release['name']}}</a></h2>
+	<p><a href="{{release['html_url']}}" name="{{release['name']}}">See <i class="fa fa-github"></i> github for details</a></p>
+</div>
+{% if release['prerelease'] == True %}
+<div class="row">
+	<div class="col-md-11 col-md-offset-1">
+		<div class="alert alert-danger" role="alert">Warning: {{release['name']}} is a nigthly build!</div>
+	</div>
+</div>
+{% else %}
+<div class="row">
+	<div class="col-md-3 col-md-offset-1">
+		<div class="panel panel-info">
+			<div class="panel-heading">
+				<p class="text-center">
+					<i class="fa fa-windows fa-3x" style="margin-top: 10px;"></i>
+				</p>
+				<h3 class="text-center">Windows</h3>
+				<p class="text-center">Windows XP and beyond</p>
+			</div>
+			<ul class="list-group list-group-flush text-center">
+				{%for a in release['assets'] if 'x64.msi' in a['name']%}
+					<li class="list-group-item">
+						<a href="{{a['browser_download_url']}}" class="btn  btn-success btn-block" role="button">x64</a>
+					</li>
+				{%endfor%}
+			</ul>
+			<ul class="list-group list-group-flush text-center">
+				{%for a in release['assets'] if 'Win32.msi' in a['name']%}
+					<li class="list-group-item">
+						<a href="{{a['browser_download_url']}}" class="btn  btn-default btn-block" role="button">Win32</a>
+					</li>
+				{%endfor%}
+			</ul>
+		</div>
+	</div>
+	<div class="col-md-3">
+		<div class="panel panel-info">
+			<div class="panel-heading">
+				<p class="text-center">
+					<i class="fa fa-linux fa-3x" style="margin-top: 10px;"></i>
+				</p>
+				<h3 class="text-center">Linux</h3>
+				<p class="text-center">Redhat/Centos</p>
+			</div>
+			<ul class="list-group list-group-flush text-center">
+				{%for a in release['assets'] if 'el7.x86_64.rpm' in a['name']%}
+					<li class="list-group-item">
+						<a href="{{a['browser_download_url']}}" class="btn  btn-default btn-block" role="button">EL7 x64</a>
+					</li>
+				{%endfor%}
+				{%for a in release['assets'] if 'el6.x86_64.rpm' in a['name']%}
+					<li class="list-group-item">
+						<a href="{{a['browser_download_url']}}" class="btn  btn-default btn-block" role="button">EL6 x64</a>
+					</li>
+				{%endfor%}
+			</ul>
+		</div>
+	</div>
+	<div class="col-md-3">
+		<div class="panel panel-info">
+			<div class="panel-heading">
+				<p class="text-center">
+					<i class="fa fa-code fa-3x" style="margin-top: 10px;"></i>
+				</p>
+				<h3 class="text-center">Source Code</h3>
+				<p class="text-center">zip</p>
+			</div>
+			<ul class="list-group list-group-flush text-center">
+				<li class="list-group-item">
+					<a class="btn btn-default" href="{{release['zipball_url']}}" role="button">zip</a>
+				</li>
+				<li class="list-group-item">
+					<a class="btn btn-default" href="{{release['tarball_url']}}" role="button">tgz</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>
+{% endif %}
+<div class="row">
+	<div class="col-md-11 col-md-offset-1">
+		<h2>All files:</h2>
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>File</th>
+					<th>Date</th>
+					<th>Size</th>
+				</tr>
+			</thead>
+			<tbody>
+				{%for a in release['assets']%}
+					<tr{% if 'msi' in a['name'] %} class="success"{% endif %}>
+						<td><strong><a href="{{a['browser_download_url']}}">{{a['name']}}</a></strong></td>
+						<td>{{a['updated_at']}}</td>
+						<td>{{a['size']|sizeformat}}</td>
+					</tr>
+				{%endfor%}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-md-11 col-md-offset-1">
+		<h2>Changelog:</h2>
+		<pre>{{release['body']}}</pre>
+	</div>
+</div>
+{% endfor %}
+	
+
+</div>
+  
+  {% for file in CUSTOM_PAGE_FOOTERS %}
+    {% include "includes/" + file %}
+  {% endfor %}
+
+{% endblock content_body %}
+
+{% block    content_footer %}
+{% if CUSTOM_CONTENT_BOTTOM_PAGE %}
+{% include "includes/" + CUSTOM_CONTENT_BOTTOM_PAGE %}
+{% endif %}
+{% endblock content_footer %}
+
+{% block    container_footer %}
+{% if CUSTOM_CONTAINER_BOTTOM_PAGE %}
+{% include "includes/" + CUSTOM_CONTAINER_BOTTOM_PAGE %}
+{% endif %}
+{% endblock container_footer %}
+
+{% block scripts %}
+  {% if CUSTOM_SCRIPTS_PAGE %}
+  {% include "includes/" + CUSTOM_SCRIPTS_PAGE %}
+  {% endif %}
+{% endblock %}
+
+{%block slider_js %}
+{%endblock %}
+
