@@ -46,6 +46,7 @@ class GitHubReleaseGenerator(generators.Generator):
         
         
         r = requests.get(self.settings.get("GITHUB_RELEASE_URL", 'https://api.github.com/repos/mickem/nscp/releases'))
+        r.encoding = 'utf8'
         if(r.ok):
             self.releases = json.loads(r.text or r.content)
         
