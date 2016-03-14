@@ -5,15 +5,11 @@ from __future__ import unicode_literals, print_function
 
 import logging
 import os
-import re
 import requests
 import json
 
-from blinker import signal
-
 from pelican import signals
 from pelican import generators
-from pelican.utils import mkdir_p
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +30,7 @@ class GitHubReleaseGenerator(generators.Generator):
     def generate_context(self):
         self.releases = ['0.4.4.1', '0.4.4.2', '0.4.3.4']
         self._update_context(('releases', ))
+        self.project = self.settings.get("GITHUB_PROJECT", [])
         self.versions = self.settings.get("GITHUB_MAJOR_VERSIONS", [])
         self.promoted_release = self.settings.get("GITHUB_PROMOTED_VERSION", '')
         self.template = self.settings.get("GITHUB_TEMPLATE", 'release')
@@ -43,12 +40,22 @@ class GitHubReleaseGenerator(generators.Generator):
         
         self.env.filters.update({'sizeformat': sizeof_fmt})
         
+        base_url = 'https://api.github.com/repos/%s/releases'%self.project
         
-        
-        r = requests.get(self.settings.get("GITHUB_RELEASE_URL", 'https://api.github.com/repos/mickem/nscp/releases'))
+        self.releases = []
+        logging.info('Fetching: %s'%base_url)
+        r = requests.get(base_url)
         r.encoding = 'utf8'
-        if(r.ok):
-            self.releases = json.loads(r.text or r.content)
+        page = 2
+        while r.ok:
+            result = json.loads(r.text or r.content)
+            if len(result) == 0:
+                break
+            self.releases.extend(result)
+            logging.info('Fetching: %s?page=%d'%(base_url, page))
+            r = requests.get('%s?page=%d'%(base_url, page))
+            r.encoding = 'utf8'
+            page=page+1
         
         signals.static_generator_finalized.send(self)
 
